@@ -7,10 +7,12 @@ var options = {
 
 var pgp = require('pg-promise')(options);
 var cn = {
+    host:"ec2-54-163-225-208.compute-1.amazonaws.com",
     port: 5432,
-    database: 'books',
-    user: 'Allen',
-    password: 'yhn960716'
+    database: 'd99m473ab6h247',
+    user: 'kbatncdacntkir',
+    password: '646fe6cb14b266c3704173da5a243abc07439f8068ad618486665285ea231bc2',
+    ssl: true
 };
 var db = pgp(cn);
 
