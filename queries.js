@@ -24,6 +24,7 @@ module.exports = {
     createBook: createBook,
     addAReview: addAReview,
     editReview: editReview,
+    deleteReview: deleteReview,
     removeBook: removeBook
 };
 
@@ -110,6 +111,22 @@ function editReview(req, res, next) {
                     status: 'success',
                     message: 'Updated review'
                 });
+        })
+        .catch(function (err) {
+            return next(err);
+        });
+}
+
+function deleteReview(req, res, next) {
+    db.result('delete from reviews where review_id = $1', req.body.review_id)
+        .then(function (result) {
+            /* jshint ignore:start */
+            res.status(200)
+                .json({
+                    status: 'success',
+                    message: 'Deleted review'
+                });
+            /* jshint ignore:end */
         })
         .catch(function (err) {
             return next(err);
