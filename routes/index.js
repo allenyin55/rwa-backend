@@ -9,7 +9,7 @@ router.get('/api/books/:id', db.getSingleBook);
 router.post('/api/books', db.createBook);
 router.post('/api/books/:id/addReview', db.addAReview);
 router.put('/api/books/:id', db.editReview);
-router.delete('/api/books/:id/deleteReview', db.deleteReview);
+router.post('/api/books/:id/deleteReview', db.deleteReview);  //use post instead of delete because axios delete doesn't allow req.body
 router.delete('/api/books/:id', db.removeBook);
 
 

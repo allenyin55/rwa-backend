@@ -46,11 +46,10 @@ function getAllBooks(req, res, next) {
 
 function getSingleBook(req, res, next) {
     var bookID = parseInt(req.params.id);
-    db.many('select * from books where id = $1', bookID)
+    db.one('select * from books where id = $1', bookID)
         .then(function (book) {
-            db.many('select * from reviews where book_id = $1', bookID)
+            db.any('select * from reviews where book_id = $1', bookID)
                 .then(function (reviews) {
-                    console.log(reviews[0].dateedited   )
                     res.status(200)
                         .json({
                             status: 'success',
@@ -59,6 +58,9 @@ function getSingleBook(req, res, next) {
                             message: 'Retrieved ONE book'
                         });
                 })
+                .catch(function (err) {
+                    return next(err);
+                });
         })
         .catch(function (err) {
             return next(err);
@@ -103,6 +105,7 @@ function addAReview(req, res, next) {
 }
 
 function editReview(req, res, next) {
+    console.log(req.body)
     db.none('update reviews set review=$1, reviewer=$2, dateEdited=$3 where review_id=$4',
         [req.body.review, req.body.reviewer, req.body.dateEdited, req.body.review_id])
         .then(function () {
