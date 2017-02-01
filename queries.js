@@ -82,7 +82,7 @@ function getSingleBook(req, res, next) {
 }
 
 function createBook(req, res, next) {
-  db.task(function (t) {
+  db.tx(function (t) {
     return t.any('insert into books(title, bookInfo, dateAdded) select $1, $2, $3 where ' +
       'not exists (select title from books where title = $1) returning id;' +
       'select id from books where title = $1',
@@ -106,7 +106,7 @@ function createBook(req, res, next) {
 }
 
 function createJourney(req, res, next) {
-  db.task(function (t) {
+  db.tx(function (t) {
     return t.any('insert into books(title, bookInfo, dateAdded) select $1, $2, $3 where ' +
       'not exists (select title from books where title = $1) returning id;' +
       'select id from books where title = $1',
@@ -209,7 +209,7 @@ function removeBook(req, res, next) {
 function getBooksOfAUser(req, res, next) {
   console.log("req.body", req.body)
   var profile_id = req.body.profile_id;
-  db.tx(function (t) {
+  db.task(function (t) {
     var q1 = t.any('select * from read_stats where profile_id = $1', [profile_id]);
     var q2 = t.any('select * from books where id IN(select book_id from read_stats ' +
       'where profile_id = $1)', [profile_id]);
