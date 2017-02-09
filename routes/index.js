@@ -14,7 +14,7 @@ router.put('/api/books/:id', db.editReview);
 router.post('/api/books/:id/deleteReview', db.deleteReview);  //use post instead of delete because axios delete doesn't allow req.body
 router.delete('/api/books/:id', db.removeBook);
 router.post('/api/profile', db.getBooksOfAUser);
-
+router.post('/api/journey/:id', db.updateUserStats);
 
 router.get('/', function (req, res) {
     res.send('This is a placeholder');
