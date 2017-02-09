@@ -36,8 +36,8 @@ module.exports = {
   editReview: editReview,
   deleteReview: deleteReview,
   removeBook: removeBook,
-  getBooksOfAUser: getBooksOfAUser
-
+  getBooksOfAUser: getBooksOfAUser,
+  updateUserStats: updateUserStats,
 };
 
 function getAllBooks(req, res, next) {
@@ -58,12 +58,10 @@ function getAllBooks(req, res, next) {
 
 function getSingleBook(req, res, next) {
     var bookID = parseInt(req.params.id);
-    console.log(req.params.id)
     db.one('select * from books where id = $1', bookID)
         .then(function (book) {
             db.any('select * from reviews where book_id = $1', bookID)
                 .then(function (reviews) {
-                  console.log(reviews);
                     res.status(200)
                         .json({
                             status: 'success',
@@ -106,6 +104,7 @@ function createBook(req, res, next) {
 }
 
 function createJourney(req, res, next) {
+  console.log(req.body)
   db.tx(function (t) {
     return t.any('insert into books(title, bookInfo, dateAdded) select $1, $2, $3 where ' +
       'not exists (select title from books where title = $1) returning id;' +
@@ -155,7 +154,6 @@ function addComment(req, res, next){
 }
 
 function editReview(req, res, next) {
-    console.log(req.body)
     db.none('update reviews set review=$1, reviewer=$2, dateEdited=$3 where review_id=$4',
         [req.body.review, req.body.reviewer, req.body.dateEdited, req.body.review_id])
         .then(function () {
@@ -171,10 +169,8 @@ function editReview(req, res, next) {
 }
 
 function deleteReview(req, res, next) {
-  console.log(req.body)
     db.result('delete from reviews where review_id = $1', req.body.review_id)
         .then(function (result) {
-          console.log(result)
             /* jshint ignore:start */
             res.status(200)
                 .json({
@@ -207,7 +203,6 @@ function removeBook(req, res, next) {
 }
 
 function getBooksOfAUser(req, res, next) {
-  console.log("req.body", req.body)
   var profile_id = req.body.profile_id;
   db.task(function (t) {
     var q1 = t.any('select * from read_stats where profile_id = $1', [profile_id]);
@@ -229,4 +224,20 @@ function getBooksOfAUser(req, res, next) {
       return next(err);
     });
 
+}
+
+function updateUserStats(req, res, next){
+  console.log(req.body)
+  db.none('update read_stats set reading_status=$1 where book_id=$2 and profile_id=$3',
+        [req.body.reading_status, req.body.book_id, req.body.profile_id])
+        .then(function () {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    message: 'Updated journey'
+                });
+        })
+        .catch(function (err) {
+            return next(err);
+        });
 }
