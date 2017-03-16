@@ -1,5 +1,6 @@
-const promise = require('bluebird');
-const axios = require('axios');
+const promise = require('bluebird'),
+      axios = require('axios'),
+      fs = require('fs');
 
 const OXFORD_DIC_URL = 'https://od-api.oxforddictionaries.com/api/v1/entries/en';
 const OXFORD_APP_ID = '1b843d1e';
@@ -18,9 +19,9 @@ const pgp = require('pg-promise')(options);
     user: 'kbatncdacntkir',
     password: '646fe6cb14b266c3704173da5a243abc07439f8068ad618486665285ea231bc2',
     ssl: true
-};*/
-
-const cn = {
+};
+*/
+  const cn = {
   host: "localhost",
   port:5432,
   database: "books",
@@ -37,6 +38,7 @@ module.exports = {
   getSingleBook: getSingleBook,
   createBook: createBook,
   createJourney: createJourney,
+  deleteJourney: deleteJourney,
   addAReview: addAReview,
   addComment: addComment,
   getComments: getComments,
@@ -53,7 +55,8 @@ module.exports = {
   createWord: createWord,
   getWords: getWords,
   deleteWord: deleteWord,
-  getWordDef: getWordDef
+  getWordDef: getWordDef, 
+  searchWords: searchWords
 };
 
 //db.tx (transcation) is used to make multiple changes
@@ -177,6 +180,23 @@ function createJourney(req, res, next) {
   });
 }
 
+function deleteJourney(req, res, next){
+  db.none('delete from read_stats where book_id=$1', req.params.book_id)
+    .then(function (result) {
+            /* jshint ignore:start */
+            res.status(200)
+                .json({
+                    status: 'success',
+                    message: 'Deleted a journey'
+                });
+            /* jshint ignore:end */
+        })
+        .catch(function (err) {
+          console.log(err);
+          return next(err);
+        });
+}
+
 function addAReview(req, res, next) {
   const book = req.body;
 
@@ -205,7 +225,8 @@ function addAReview(req, res, next) {
 
 function editReview(req, res, next) {
   const review = req.body;
-  db.none('update reviews set review=$1, reviewer=$2, dateEdited=$3 ' + 
+  console.log(review)
+  db.none('update reviews set review=$1, reviewer=$2, dateEdited=$3, ' + 
     'rating=$4 where review_id=$5',
       [review.review, review.reviewer, review.dateEdited, review.rating, review.review_id])
       .then(function () {
@@ -216,7 +237,8 @@ function editReview(req, res, next) {
               });
       })
       .catch(function (err) {
-          return next(err);
+        console.log(err);
+        return next(err);
       });
 }
 
@@ -420,7 +442,7 @@ function deleteNote(req, res, next){
 }
 
 function createWord(req, res, next){
-  console.log(req.body);
+  console.log(req.body)
   var word = req.body;
   db.none('insert into words(book_id, profile_id, dateedited, definition)' +
     'values($1, $2, $3, $4)',
@@ -450,7 +472,7 @@ function getWords(req, res, next){
               });
       })
       .catch(function (err) {
-          return next(err);
+        return next(err);
       });
 }
 
@@ -461,7 +483,7 @@ function deleteWord(req, res, next){
             res.status(200)
                 .json({
                     status: 'success',
-                    message: 'Deleted note'
+                    message: 'Deleted words'
                 });
             /* jshint ignore:end */
         })
@@ -471,7 +493,6 @@ function deleteWord(req, res, next){
 }
 
 function getWordDef(req, res, next){
-  console.log(req.params.word)
   axios.get(`${OXFORD_DIC_URL}/${req.params.word}`, {
     headers: {
       app_id: OXFORD_APP_ID,
@@ -479,13 +500,39 @@ function getWordDef(req, res, next){
     }
   }).then(function (response) {
     res.status(200)
-                .json({
-                    status: 'success',
-                    data: response.data.results,
-                    message: 'Deleted note'
-                });
+      .json({
+          status: 'success',
+          data: response.data.results,
+          message: 'Get word definition'
+      });
   })
   .catch(function (error) {
+    if (error.response.status === 404){
+      res.status(404).json({
+        status: 'failure',
+        message: 'No Def Found'
+      })
+    } 
     console.log(error);
+    return next(error);
   });
+}
+
+function searchWords(req, res, next){
+
+  if (!req.body.word) res.end("req.body.word is null")
+  db.any("SELECT * FROM dictionary WHERE word ~ $1", '^(' + req.body.word + ').*')
+    .then((data) => {
+      res.status(200)
+              .json({
+                  status: 'success',
+                  data: data,
+                  message: 'searched words!'
+              });
+      })
+      .catch(function (err) {
+        console.log(err)
+        return next(err);
+      });
+
 }

@@ -8,6 +8,7 @@ router.get('/api/books', db.getAllBooks);
 router.get('/api/books/:id', db.getSingleBook);
 router.post('/api/books', db.createBook);
 router.post('/api/journey', db.createJourney);
+router.delete('/api/journey/:book_id/delete', db.deleteJourney);
 router.post('/api/books/:id/addReview', db.addAReview);
 router.post('/api/books/:id/addComment', db.addComment);
 router.get('/api/books/:id/comments', db.getComments);
@@ -25,6 +26,7 @@ router.post('/api/words', db.createWord);
 router.get('/api/words/:id', db.getWords);
 router.delete('/api/words/:id', db.deleteWord);
 router.get('/api/words/def/:word', db.getWordDef);
+router.post('/api/words/search', db.searchWords);
 
 router.get('/', function (req, res) {
     res.send('This is a placeholder');
