@@ -12,7 +12,7 @@ const options = {
 };
 
 const pgp = require('pg-promise')(options);
-/*var cn = {
+var cn = {
     host:"ec2-54-163-225-208.compute-1.amazonaws.com",
     port: 5432,
     database: 'd99m473ab6h247',
@@ -20,14 +20,14 @@ const pgp = require('pg-promise')(options);
     password: '646fe6cb14b266c3704173da5a243abc07439f8068ad618486665285ea231bc2',
     ssl: true
 };
-*/
-  const cn = {
+
+/*const cn = {
   host: "localhost",
   port:5432,
   database: "books",
   user: "Allen",
   password: "yhn960716"
-};
+};*/
 
 const db = pgp(cn);
 
@@ -68,7 +68,7 @@ function getAllBooks(req, res, next) {
             res.status(200)
                 .json({
                     status: 'success',
-                    data: data,
+                    data: data.reverse(),
                     message: 'Retrieved ALL books'
                 });
         })
